@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Open Your Letter... ❤️</title>
+    <style>
+        :root {
+            --bg-pink: #fff0f3;    /* สีชมพูอ่อนตอนแรกสุด */
+            --bg-paper: #fffbf7;   /* สีขาวนวลถนอมสายตาที่จะเปลี่ยนตอนจดหมายเปิด ✨ */
+            --primary-pink: #ffb5a7;
+            --text-dark: #d62828;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 20px;
+            background-color: var(--bg-pink); /* เริ่มต้นเป็นสีชมพูอ่อน */
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            transition: background-color 0.8s ease; 
+        }
+
+        .fade-out-step {
+            opacity: 0 !important;
+            transform: scale(0.9) !important;
+            pointer-events: none !important;
+            position: absolute !important;
+        }
+
+        /* --------------------------------------
+           [STAGE 1] โซนซองจดหมายสั่น
+        ----------------------------------------- */
+        .intro-container {
+            display: flex;
+            text-align: center;
+            transition: all 0.5s ease;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .intro-title {
+            color: var(--text-dark);
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .intro-subtitle {
+            color: #7a7a7a;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .envelope-box {
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.7s;
+            animation: envelopeWiggleAlways 0.5s ease-in-out infinite;
+        }
+
+        .envelope-box:active { transform: scale(0.95); }
+
+        .envelope-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        @keyframes envelopeWiggleAlways {
+            0%   { transform: rotate(0deg); }
+            25%  { transform: rotate(3deg); }
+            50%  { transform: rotate(0deg); }
+            75%  { transform: rotate(-3deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* --------------------------------------
+           [STAGE 2] ข้อความแสดงผลบนพื้นหลังโล่ง ๆ
+        ----------------------------------------- */
+        .text-stage {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            text-align: left;
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .text-stage.fade-in {
+            display: block;
+            animation: slideUp 0.8s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .letter-date {
+            text-align: right;
+            color: #7a7a7a !important;
+            font-size: 1rem;
+            margin-bottom: 25px !important;
+            text-indent: 0 !important;
+        }
+
+        .text-content {
+            color: #333333;
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .text-content p {
+            margin: 0 0 20px 0;
+            text-indent: 25px;
+        }
+
+        .text-content p:nth-child(2) {
+            text-indent: 0;
+            font-weight: bold;
+            
+        }
+
+        /* ปุ่ม X สุดเก๋ไก๋ท้ายจดหมาย */
+        .x-btn-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+            gap: 8px;
+        }
+
+        .btn-x {
+            background-color: #ede7e7;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+            animation: floatBtn 2s ease-in-out infinite;
+        }
+
+
+        /* --------------------------------------
+           [STAGE 3] หน้าจอใส่รหัสผ่านลับ (Password Stage)
+        ----------------------------------------- */
+        /* --- สไตล์หน้าจอใส่รหัสผ่านลับ --- */
+        .password-stage {
+            display: none; /* ซ่อนไว้ก่อน */
+            width: 100%;
+            max-width: 400px;
+            
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .pass-title {
+            color: #ff9595;
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .pass-subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #eef0f2;
+            border-radius: 50px;
+            outline: none;
+            text-align: center;
+            background: #fff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+
+        .password-input:focus {
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 10px rgba(255, 181, 167, 0.4);
+        }
+
+        .btn-submit-pass {
+            margin-top: 20px;
+            width: 50%;
+            background-color: #ff9595;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(214, 40, 40, 0.15);
+        }
+
+        .pass-error-msg {
+            color: #e63946;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pass-error-msg.show { opacity: 1; }
+
+        /* --------------------------------------
+           [STAGE 4] หน้าจอโชว์ "บัตรเป็นแฟนกัน" (Success)
+        ----------------------------------------- */
+        .card-stage {
+            display: none;
+            width: 100%;
+            max-width: 430px;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ตัวดีไซน์บัตรสุด Exclusive ลอยบนพื้นหลังชมพู */
+        .couple-card {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(214, 40, 40, 0.12);
+            border: 2px solid #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ของตกแต่งในบัตร */
+        .card-ribbon {
+            background: var(--text-dark);
+            color: white;
+            padding: 6px 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .card-title {
+            color: #333;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+
+        .card-names {
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            font-weight: bold;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card-footer {
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px dashed #ffd6db;
+            padding-top: 15px;
+            margin-top: 25px;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            z-index: 9999;
+            top: -20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="intro-container" id="introContainer">
+        <div class="envelope-box" onclick="startEnvelopeAnimation()">
+            <img src="./letter/test_letter1.png" alt="Envelope" class="envelope-img" id="envelopeImg">
+        </div>
+    </div>
+
+    <div class="text-stage" id="textStage">
+        <div class="text-content">
+            <p class="letter-date">5 กรกฎาคม 2026</p>
+            <p>ถึง เพียงขวัญของพี่ 🩷</p>
+            <p>สวัสดีนะคะเพียงขวัญ หนูรู้มั้ยว่าตอนที่พี่กำลังเขียนจดหมายฉบับนี้ให้หนู หนูกำลังหลับฝันดีแน่ ๆ เลยที่รัก ตอนนี้ 02:22 วันเสาร์ที่ 4 กรกฎา แต่หนูจะได้เห็นจดหมายฉบับนี้ก็วันพรุ่งนี้นู่นเลย</p>
+            <p>พี่ดีใจนะคะที่เราได้เจอกัน พี่ตั้งใจทำสิ่งนี้ให้หนูมาก อยากให้เป็นความทรงจำดี ๆ ของเรานะ </p>
+            <p>พี่เตรียมของมาให้หนูเยอะแยะเลย มีดอกไม้ มีหนังสืออีก 2 เล่ม เล่มแรกพี่จำได้ว่าหนูเคยบอกว่าหนูเคยมี แต่มันหายไปแล้ว ส่วนอีกเล่มเห็นแล้วนึกถึงก็เลยซื้อมาให้ แล้วก็กิ๊บติดผมที่หนูอยากได้ หวังว่าหนูจะชอบทุกอย่างที่พี่ให้นะคะ เค้าตั้งใจเลือกมาให้ที่รักเลยนะ</p>
+            <p>แต่ว่าสงสัยมันจะเขียนไม่พอแล้วนะเนี่ย พื้นที่เริ่มไม่พอ แต่พี่ยังอยากเขียนอยู่เลย สงสัยคงต้องให้หนูหันหน้ามาคุยกับพี่แทนแล้ว แค่เขียนคงไม่พอแน่ ๆ ถามพี่หน่อยนะคะว่า มีอะไรจะพูดกับหนูอีกไหม</p>
+            
+            <div class="x-btn-container">
+                <button class="btn-x" onclick="goToPasswordStage()">x</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="password-stage" id="passwordStage">
+        <h2 class="pass-title">Password</h2>
+        
+        <input type="text" id="passInput" class="password-input" placeholder="enter password" autocomplete="off">
+        <div class="pass-error-msg" id="passErrorMsg">incorrect password</div>
+        
+        <button class="btn-submit-pass" onclick="checkSecretPassword()">submit</button>
+    </div>
+
+    <div class="card-stage" id="cardStage">
+        <div class="couple-card">
+            <div class="card-ribbon">💖 OFFICIAL COUPLE CARD</div>
+            <h2 class="card-title">บัตรรับรองสถานะคนพิเศษ</h2>
+            
+            <div class="card-names">
+                <span>พี่พลอย</span>
+                <span>❤️</span>
+                <span>เพียงขวัญ</span>
+            </div>
+            
+            <p style="color: #666; font-size: 0.95rem; margin: 0 10px;">ขอบคุณที่ยอมรับเงื่อนไขสัญญา และตกลงก้าวเข้ามาเป็นเรื่องราวดี ๆ ในชีวิตของกันและกันนะคนเก่ง 🥰</p>
+            
+            <div class="card-footer">
+                วันที่มีผลบังคับใช้สัญญารัก: 5 กรกฎาคม 2026
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const envelopeFrames = [
+            './letter/test_letter1.png',
+            './letter/test_letter2.png',
+            './letter/test_letter3.png',
+            './letter/test_letter4.png',
+            './letter/test_letter5.png',
+            './letter/test_letter6.png',
+            './letter/test_letter7.png'
+        ];
+
+        envelopeFrames.forEach((src) => {
+            const img = new Image();
+            img.src = src;
+        });
+
+        const introContainer = document.getElementById('introContainer');
+        const envelopeImg = document.getElementById('envelopeImg');
+        const textStage = document.getElementById('textStage');
+        const passwordStage = document.getElementById('passwordStage');
+        const cardStage = document.getElementById('cardStage');
+        const passInput = document.getElementById('passInput');
+        const passErrorMsg = document.getElementById('passErrorMsg');
+
+        let currentEnvelopeFrame = 0;
+        let isAnimating = false;
+
+        function startEnvelopeAnimation() {
+            if (isAnimating) return; 
+            isAnimating = true;
+            playClickSound();
+
+            const envelopeBox = document.querySelector('.envelope-box');
+            envelopeBox.style.animation = 'none';
+
+            const frameRate = 300; 
+
+            const interval = setInterval(() => {
+                currentEnvelopeFrame++;
+                if (currentEnvelopeFrame < envelopeFrames.length) {
+                    envelopeImg.src = envelopeFrames[currentEnvelopeFrame];
+                } else {
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        introContainer.classList.add('fade-out-step');
+                        setTimeout(() => {
+                            introContainer.style.display = 'none';
+                            document.body.style.backgroundColor = 'var(--bg-paper)';
+                            textStage.classList.add('fade-in'); 
+                        }, 700);
+                    }, 1000);
+                }
+            }, frameRate);
+        }
+
+        // ฟังก์ชันย้ายจากจดหมาย ไปหน้าใส่รหัส (โดยรักษาสีขาวนวลไว้)
+        function goToPasswordStage() {
+            playClickSound();
+            // สั่งลิ้งค์ข้ามมาหน้า card.html ตรงๆ เลยค่ะ!
+            window.location.href = 'card.html'; 
+}
+
+        // ฟังก์ชันเช็ครหัสผ่าน
+        function checkSecretPassword() {
+            const code = document.getElementById('passInput').value.trim();
+            const errorMsg = document.getElementById('passErrorMsg');
+
+            // 🛠 เปลี่ยนรหัสผ่านตรงนี้ได้เลยค่ะ!
+            if (code === "05072026") {
+                playClickSound();
+                errorMsg.classList.remove('show');
+                
+                // สั่งซ่อนหน้า Password และข้ามไปหน้า Card/Success
+                document.getElementById('passwordStage').classList.add('fade-out-step');
+                setTimeout(() => {
+                    document.getElementById('passwordStage').style.display = 'none';
+                    
+                    // 💡 ตรงนี้ค่อยสั่งเปลี่ยนสีกลับเป็นชมพู และโชว์บัตรแฟนของคุณค่ะ
+                    document.body.style.backgroundColor = 'var(--bg-pink)';
+                    // if(document.getElementById('cardStage')) document.getElementById('cardStage').style.display = 'block';
+                    
+                    alert("รหัสถูกต้อง! (โชว์บัตรแฟนต่อได้เลยค่ะ)"); 
+                }, 500);
+            } else {
+                errorMsg.classList.add('show'); // ถ้ารหัสผิดให้โชว์คำเตือน
+            }
+        }
+
+        function playClickSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.08);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function createConfetti(amount) {
+            const colors = ['#ffb5a7', '#fec5bb', '#fcd5ce', '#ffcad4', '#b5e2fa', '#d62828'];
+            for (let i = 0; i < amount; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0px';
+                document.body.appendChild(confetti);
+
+                const duration = Math.random() * 2.5 + 2;
+                confetti.style.transition = `all ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+                
+                setTimeout(() => {
+                    confetti.style.transform = `translateY(110vh) rotate(${Math.random() * 360}deg)`;
+                    confetti.style.opacity = '1';
+                }, 50);
+
+                setTimeout(() => confetti.remove(), duration * 1000);
+            }
+        }
+
+        // กดปุ่ม Enter ในช่องรหัสผ่านเพื่อส่งฟอร์มได้เช่นกัน
+        passInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkSecretPassword();
+            }
+        });
+    </script>
+</body>
+</html>

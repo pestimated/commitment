@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🔒 Enter Passcode... ✨</title>
+    <style>
+        :root {
+            --bg-paper: #fffbf7;    
+            --card-white: #ffffff;  
+            --text-main: #ff7096;   
+            --primary-pink: #ffb5a7; 
+            --soft-pink: #fff0f3;
+            --text-muted: #8e8e93;  
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-paper); 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* 📦 ปรับคอนเทนเนอร์ให้ดูเพรียวบางและนุ่มนวลขึ้น */
+        .main-container {
+            width: 100%;
+            max-width: 380px; /* บีบให้ผอมลงเพื่อลดความเทอะทะ */
+            background-color: var(--card-white);
+            border-radius: 32px;
+            padding: 50px 30px;
+            box-shadow: 0 20px 60px rgba(255, 112, 150, 0.04); 
+            border: 1px solid rgba(255, 112, 150, 0.1);
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+            pointer-events: none;
+        }
+
+        /* --------------------------------------
+           [สไตล์ใหม่] ส่วนป้อนรหัสผ่านที่คลีนกว่าเดิม (Elegant Input UI)
+        ----------------------------------------- */
+        .pass-stage-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pass-title {
+            color: #333333; 
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .pass-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 0 40px 0;
+            line-height: 1.6;
+        }
+
+        /* รีเซ็ตดีไซน์ช่องกรอกรหัสเป็นแบบเส้นใต้สุดมินิมอล */
+        .input-wrapper {
+            position: relative;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 10px 0;
+            font-size: 1.4rem;
+            border: none;
+            border-bottom: 2px solid #eef0f2; /* เปลี่ยนเป็นเส้นใต้คลีนๆ */
+            outline: none;
+            text-align: center;
+            background: transparent;
+            transition: all 0.3s;
+            letter-spacing: 4px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .password-input:focus {
+            border-bottom-color: var(--text-main);
+        }
+
+        /* ดีไซน์ปุ่มส่งรหัสเป็นวงกลมไอคอนลูกศรสุดเก๋ */
+        .btn-submit-pass {
+            margin-top: 35px;
+            width: 48px;
+            height: 48px;
+            background-color: var(--text-main); 
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 112, 150, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-submit-pass:active { transform: scale(0.92); }
+
+        .pass-error-msg {
+            color: var(--text-main); 
+            font-size: 0.85rem;
+            margin-top: 20px;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: 500;
+        }
+
+        .pass-error-msg.show { opacity: 1; }
+
+        /* --------------------------------------
+           [สไตล์คงเดิม] หน้าบัตรแฟนดีไซน์กุ๊กกิ๊กนุ่มฟู
+        ----------------------------------------- */
+        .card-stage {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .card-stage.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .card-id {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            background-color: var(--soft-pink);
+            padding: 4px 12px;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .card-title {
+            color: #333333;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0 0 25px 0;
+        }
+
+        .avatar-zone {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .avatar-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: var(--soft-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            border: 2px solid white;
+            box-shadow: 0 8px 15px rgba(255, 112, 150, 0.08);
+        }
+
+        .center-heart {
+            font-size: 1.8rem;
+            animation: CutePulse 0.8s infinite alternate;
+        }
+
+        @keyframes CutePulse {
+            to { transform: scale(1.15); }
+        }
+
+        .card-names-box {
+            background-color: var(--soft-pink);
+            border-radius: 20px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border: 1px dashed rgba(255, 112, 150, 0.3);
+        }
+
+        .card-names {
+            font-size: 0.7rem;
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .name-label {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .name-role {
+            font-size: 0.7rem;
+            color: var(--text-main);
+            font-weight: normal;
+            background:#feeff2;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .card-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 20px 5px;
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            color: #b5b5b5;
+            font-size: 0.8rem;
+            border-top: 2px dotted #ffe3e8;
+            padding-top: 15px;
+            margin-top: 25px;
+            font-weight: 500;
+        }
+
+        /* --- สไตล์แสดงวันออกบัตรและวันหมดอายุแบบมินิมอล --- */
+        .card-date-info {
+            background-color: #ffffff;
+            border: 1px solid #fef0f2;
+            border-radius: 16px;
+            padding: 12px 20px;
+            margin: 15px 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .date-row {
+            display: flex;
+            justify-content: space-between; /* แยกซ้ายขวาออกจากกัน */
+            font-size: 0.5rem;
+        }
+
+        .date-label {
+            color: #999999;
+            font-weight: 500;
+        }
+
+        .date-value {
+            color: #4a4a4a;
+            font-weight: 500;
+        }
+
+        .love-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ffcbd7;
+            color: var(--text-main);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 112, 150, 0.15);
+            transform: rotate(15deg);
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            z-index: 9999;
+            top: -20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container" id="mainContainer">
+        
+        <!-- ================= สเตจที่ 1: หน้าถามรหัสผ่านสไตล์ Ultra-Minimal ================= -->
+        <div id="passwordStage" class="pass-stage-wrapper">
+            <h2 class="pass-title">Enter Passcode</h2>
+            <p class="pass-subtitle"><br></p>
+            
+            <div class="input-wrapper">
+                <input type="text" id="passInput" class="password-input" placeholder="••••" autocomplete="off">
+            </div>
+            
+            <div class="pass-error-msg" id="passErrorMsg">incorrect passcode</div>
+            
+            <!-- เปลี่ยนเป็นปุ่มวงกลมลูกศรมินิมอล -->
+            <button class="btn-submit-pass" onclick="checkSecretPassword()">➔</button>
+        </div>
+
+        <!-- ================= สเตจที่ 2: บัตรคู่รักดีไซน์กุ๊กกิ๊กนุ่มฟู (คงไว้ตามเดิม) ================= -->
+        <!-- ================= สเตจที่ 2: บัตรคู่รักดีไซน์กุ๊กกิ๊กนุ่มฟู 🎀 ================= -->
+        <div class="card-stage" id="cardStage">
+            <div class="love-badge">✔</div>
+            <div class="card-id">PASS NO. 05-07-2026</div>
+            <h2 class="card-title">🎀 OFFICIAL COUPLE CARD 🎀</h2>
+            
+            <div class="avatar-zone">
+                <div class="avatar-box">🐶</div>
+                <div class="center-heart">🩷</div>
+                <div class="avatar-box">🐰</div>
+            </div>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="name-role">P'Ploy</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="name-role">Phiangkhwan</span>
+
+            
+            <!-- 💡 เพิ่มเติมโซนรายละเอียดวันออกบัตรและวันหมดอายุสุดกุ๊กกิ๊ก -->
+            <div class="card-date-info">
+                <div class="date-row">
+                    <span class="date-label">ISSUE DATE : 05 / 07 / 2026</span>
+                    <span class="date-label">EXPIRE DATE : NO EXPIRE</span>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                🔒 Verified Love Contract • 2026
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const mainContainer = document.getElementById('mainContainer');
+        const passwordStage = document.getElementById('passwordStage');
+        const cardStage = document.getElementById('cardStage');
+        const passInput = document.getElementById('passInput');
+        const passErrorMsg = document.getElementById('passErrorMsg');
+
+        function checkSecretPassword() {
+            const code = passInput.value.trim();
+
+            if (code === "ployรักkwan" || code === "05072026") {
+                playClickSound();
+                passErrorMsg.classList.remove('show');
+                
+                mainContainer.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    passwordStage.style.display = 'none';
+                    cardStage.classList.add('show');
+                    mainContainer.classList.remove('fade-out');
+                    
+                    createConfetti(140);
+                }, 400);
+
+            } else {
+                passErrorMsg.classList.add('show');
+                mainContainer.style.transform = 'translateX(8px)';
+                setTimeout(() => mainContainer.style.transform = 'translateX(-8px)', 50);
+                setTimeout(() => mainContainer.style.transform = 'translateX(0)', 100);
+            }
+        }
+
+        function playClickSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.08);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function createConfetti(amount) {
+            const colors = ['#ff7096', '#ffb5a7', '#fec5bb', '#ffcad4', '#b5e2fa', '#fff0f3'];
+            for (let i = 0; i < amount; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0px';
+                document.body.appendChild(confetti);
+
+                const duration = Math.random() * 2.5 + 2;
+                confetti.style.transition = `all ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+                
+                setTimeout(() => {
+                    confetti.style.transform = `translateY(110vh) rotate(${Math.random() * 360}deg)`;
+                    confetti.style.opacity = '1';
+                }, 50);
+
+                setTimeout(() => confetti.remove(), duration * 1000);
+            }
+        }
+
+        passInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkSecretPassword();
+            }
+        });
+    </script>
+</body>
+</html>

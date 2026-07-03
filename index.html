@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title></title>
+    <style>
+        :root {
+            --bg-color: #fff0f3;
+            --primary-pink: #ffb5a7;
+            --text-dark: #ff7096; /* 💡 ปรับเป็นสีชมพูหวานสไตล์ที่เพียงขวัญชอบ */
+            --paper-bg: #fffbf7;
+            --soft-pink: #fff5f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .fade-out-step {
+            opacity: 0 !important;
+            transform: scale(0.9) !important;
+            pointer-events: none !important;
+            position: absolute !important;
+        }
+
+        /* --- โซนเนื้อเรื่องแม่กุญแจ --- */
+        .lock-container {
+            text-align: center;
+            transition: all 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            user-select: none;
+        }
+
+        .lock-box {
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            transition: transform 0.4s;
+        }
+
+        .lock-box.shake-locked {
+            animation: lockErrorShake 0.2s ease-in-out;
+        }
+
+        .lock-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .intro-subtitle {
+            color: #7a7a7a;
+            font-size: 1.05rem;
+            margin: 0;
+            text-align: center;
+            min-height: 30px;
+        }
+
+        @keyframes lockErrorShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-12px); }
+            40%, 80% { transform: translateX(12px); }
+        }
+
+        .btn-get-key {
+            display: none;
+            background-color: var(--text-dark); 
+            color: white;
+            border: none;
+            padding: 14px 45px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 112, 150, 0.25);
+            margin-top: 15px;
+            animation: pulseBtn 1.5s infinite;
+        }
+
+        @keyframes pulseBtn {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        /* --------------------------------------
+           [STAGE 2] ปรับปรุงดีไซน์โซนป๊อปอัพสัญญา Consent ✨
+        ----------------------------------------- */
+        .consent-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 240, 243, 0.4); /* ละมุนตาด้วยเงาชมพูใส */
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .consent-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .consent-container {
+            width: 100%;
+            max-width: 400px; /* บีบกระชับให้ไม่ดูเทอะทะ */
+            background: var(--paper-bg);
+            border-radius: 32px;
+            padding: 40px 25px;
+            box-shadow: 0 20px 50px rgba(255, 112, 150, 0.05);
+            border: 1px solid rgba(255, 112, 150, 0.15);
+            transform: scale(0.95) translateY(15px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+            position: relative;
+        }
+
+        .consent-overlay.show .consent-container {
+            transform: scale(1) translateY(0);
+        }
+
+        .consent-title {
+            color: #333333;
+            font-size: 1.35rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 0 0 25px 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* กล่องข้อสัญญาปรับแต่งแบบไร้ขอบโปร่งสบายตา */
+        /* 💡 ปรับกล่องข้อสัญญาให้แสดงครบทั้งหมดในหน้าเดียว ไม่ต้อง Scroll */
+        .consent-body {
+            color: #4a4a4a;
+            line-height: 1.7;
+            font-size: 0.92rem;
+            background: var(--soft-pink);
+            padding: 20px 18px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px dashed rgba(255, 112, 150, 0.25);
+            text-align: left;
+            
+            /* 🛠️ เอา max-height และ overflow-y ของเดิมออกแล้วค่ะ */
+        }
+
+        .consent-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .consent-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .consent-heart-icon {
+            color: black;
+            font-size: 0.85rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* 💡 ดีไซน์ Checkbox กุ๊กกิ๊กแบบซ่อนกล่องพลาสติกทื่อ ๆ */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: #555;
+            cursor: pointer;
+            margin-bottom: 25px;
+            user-select: none;
+            justify-content: center;
+            line-height: 1.4;
+            padding: 0 5px;
+        }
+
+        .checkbox-label input {
+            display: none; /* ซ่อนอันเดิม */
+        }
+
+        /* เสกปุ่มติ๊กถูกวงกลมอมชมพูสุดคิ้วท์ */
+        /* 💡 1. ปรับกล่องครอบให้จัดเรียงเนื้อหาชิดซ้าย (flex-start) */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: #555;
+            cursor: pointer;
+            margin-bottom: 25px;
+            user-select: none;
+            justify-content: flex-start; /* เปลี่ยนเป็นชิดซ้าย */
+            line-height: 1.4;
+            padding: 0 5px;
+        }
+
+        .checkbox-label input {
+            display: none; 
+        }
+
+        /* 💡 2. เปลี่ยนทรงกล่องติ๊กถูกจาก 50% (วงกลม) เป็นทรงเหลี่ยมมน (6px) */
+        /* 💡 1. ตัวกล่อง Checkbox ทรงเหลี่ยมแบบปกติ (ปรับขอบมนออกให้เหลี่ยมคมขึ้น) */
+        .custom-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #eef0f2;
+            border-radius: 2px; /* 🛠️ ปรับให้เหลี่ยมคมปกติ สไตล์มินิมอล */
+            display: inline-block;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            position: relative;
+            background: white;
+        }
+
+        /* เมื่อกดเลือก ให้กล่องเป็นสีขาวโชว์ความคลีน */
+        .checkbox-label input:checked + .custom-checkbox {
+            border-color: var(--text-dark);
+            background-color: white; /* เปลี่ยนเป็นพื้นหลังขาวเพื่อขับตัวเหลี่ยมข้างใน */
+        }
+
+        /* 💡 2. เปลี่ยนเครื่องหมายถูกโค้ง ๆ เป็น "สี่เหลี่ยมจัตุรัสถมดำสีชมพู" เหลี่ยมเป๊ะสะใจ */
+        .checkbox-label input:checked + .custom-checkbox::after {
+            content: ''; /* 🛠️ ลบเครื่องหมาย ✔ ทิ้งไป */
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--text-dark); /* ถมสีชมพูเข้มเป็นสี่เหลี่ยมตรงกลาง */
+            border-radius: 0px; /* เหลี่ยมสนิท 100% */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 💡 ปรับกล่องลงชื่อเป็นแบบเส้นใต้มินิมอลสไตล์เดียวกับหน้ากรอกรหัสผ่าน */
+        .signature-zone {
+            width: 100%;
+            margin: 0 auto 30px auto;
+        }
+
+        .signature-input {
+            width: 100%;
+            padding: 8px 0;
+            font-size: 1rem;
+            border: none;
+            border-bottom: 2px solid #eef0f2;
+            outline: none;
+            text-align: center;
+            background: transparent;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .signature-input:focus {
+            border-bottom-color: var(--text-dark);
+        }
+
+        /* ปุ่มส่งสัญญาทรงกลมมนขอบเพรียว */
+        .btn-consent-submit {
+            width: 50%;
+            background-color: #eef0f2;
+            color: #a1a1a1;
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn-consent-submit.active {
+            background-color: var(--text-dark);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 112, 150, 0.25);
+        }
+    </style>
+</head>
+<body id="storyBody">
+
+    <!-- โซนหน้าแรก: ลำดับเนื้อเรื่องแม่กุญแจ -->
+    <div class="lock-container" id="lockStage">
+        <div class="lock-box" id="lockBox">
+            <img src="./lock/lock_1.png" alt="Lock" class="lock-img" id="lockImg">
+        </div>
+        <p class="intro-subtitle" id="lockSubtitle"></p>
+        <button class="btn-get-key" id="btnGetKey" onclick="openConsentPopup(event)">Key</button>
+    </div>
+
+    <!-- โซนป๊อปอัพสัญญา Consent รูปแบบมินิมอลกุ๊กกิ๊ก -->
+    <div class="consent-overlay" id="consentOverlay">
+        <div class="consent-container">
+            <h2 class="consent-title">เงื่อนไขในการรับกุญแจ</h2>
+            
+            <!-- 💡 เปลี่ยนเลขข้อทื่อ ๆ เป็นหัวใจดุ๊กดิ๊กชวนอ่าน -->
+            <div class="consent-body">
+                <div class="consent-row">
+                    <span class="consent-heart-icon">1.</span>
+                    <span>หนูต้องรักพี่คนเดียว ไม่รักคนอื่น ไม่นอกใจ แล้วก็จะไม่รักใครคนไหนนอกจากพี่อีกนะคะ</span>
+                </div>
+                <div class="consent-row">
+                    <span class="consent-heart-icon">2.</span>
+                    <span>ถ้ามีคนเข้ามาสนใจ หรือเข้ามาจีบ หนูต้องบอกว่าหนูมีพี่แล้ว แล้วหนูก็ห้ามสนใจคนอื่นนะ</span>
+                </div>
+                <div class="consent-row">
+                    <span class="consent-heart-icon">3.</span>
+                    <span>หนูจะต้องไม่รักพี่น้อยลง ไม่เบื่อกัน จะยังใส่ใจ ยังดูแลกันแบบนี้นะ</span>
+                </div>
+                <div class="consent-row">
+                    <span class="consent-heart-icon">4.</span>
+                    <span>ถ้าเราทะเลาะกัน ต่อให้เรื่องจะร้ายแรงแค่ไหน แต่เราจะต้องกลับมาดีกัน ให้อภัยกัน เราจะไม่เลิกกันนะคะ</span>
+                </div>
+                <div class="consent-row">
+                    <span class="consent-heart-icon">5.</span>
+                    <span>เราจะรักกัน ใช้ชีวิตด้วยกันไปเรื่อย ๆ เราจะไม่เลิกรักกัน แล้วเราก็จะรักกันมากขึ้นทุก ๆ วันเลยนะ</span>
+                </div>
+            </div>
+
+            <!-- ดีไซน์ Checkbox วงกลมแบบกำหนดเอง -->
+            <label class="checkbox-label">
+                <input type="checkbox" id="consentCheck" onchange="validateConsentForm()">
+                <span class="custom-checkbox"></span>
+                <span>หนูยินยอมทำตามเงื่อนไขทุกข้อของพี่</span>
+            </label>
+
+            <!-- ช่องพิมพ์คำปฏิญาณแบบเส้นใต้มินิมอลหรูหรา -->
+            <div class="signature-zone">
+                <input type="text" id="signatureInput" class="signature-input" placeholder="พิมพ์ว่า เพียงขวัญรักพี่พลอย" autocomplete="off" oninput="validateConsentForm()">
+            </div>
+
+            <button class="btn-consent-submit" id="btnConsentSubmit" onclick="submitConsent()" disabled>submit</button>
+        </div>
+    </div>
+
+    <script>
+        const lockFrames = [
+            './lock/lock_1.png', './lock/lock_2.png', './lock/lock_3.png', './lock/lock_4.png',
+            './lock/lock_5.png', './lock/lock_6.png', './lock/lock_7.png', './lock/lock_8.png',
+            './lock/lock_9.png', './lock/lock_10.png', './lock/lock_11.png', './lock/lock_12.png',
+            './lock/lock_13.png', './lock/lock_14.png', './lock/lock_15.png',
+        ];
+
+        const lockStage = document.getElementById('lockStage');
+        const lockBox = document.getElementById('lockBox');
+        const lockImg = document.getElementById('lockImg');
+        const lockSubtitle = document.getElementById('lockSubtitle');
+        const btnGetKey = document.getElementById('btnGetKey');
+        const consentOverlay = document.getElementById('consentOverlay');
+        const consentCheck = document.getElementById('consentCheck');
+        const signatureInput = document.getElementById('signatureInput');
+        const btnConsentSubmit = document.getElementById('btnConsentSubmit');
+
+        let clickCount = 0;
+        let currentLockFrame = 0;
+        let isAnimating = false;
+
+        function advanceStory() {
+            if (isAnimating || clickCount >= 5) return;
+            clickCount++;
+            playErrorSound();
+
+            lockBox.classList.remove('shake-locked');
+            void lockBox.offsetWidth; 
+            lockBox.classList.add('shake-locked');
+
+            if (clickCount === 3) {
+                lockSubtitle.innerHTML = 'ยังเปิดไม่ได้นะคะ หนูต้องมีกุญแจก่อนนะ';
+            } else if (clickCount === 4) {
+                lockSubtitle.innerHTML = 'อยากได้กุญแจไหมคะ';
+            } else if (clickCount === 5) {
+                lockSubtitle.innerHTML = 'ถ้าอยากได้กุญแจ หนูต้องเข้าไปเอานะ';
+                btnGetKey.style.display = 'inline-block';
+            }
+        }
+
+        document.getElementById('storyBody').addEventListener('click', function(e) {
+            if (e.target.closest('.consent-container') || e.target.id === 'btnGetKey') return;
+            advanceStory();
+        });
+
+        function openConsentPopup(event) {
+            playClickSound();
+            consentOverlay.classList.add('show');
+            if(event) event.stopPropagation();
+        }
+
+        function validateConsentForm() {
+            const isChecked = consentCheck.checked;
+            const signatureText = signatureInput.value.trim();
+            const isValidSignature = (signatureText === "เพียงขวัญรักพี่พลอย" || signatureText === "เพียงขวัญรักพี่พลอยมาก");
+
+            if (isChecked && isValidSignature) {
+                btnConsentSubmit.removeAttribute('disabled');
+                btnConsentSubmit.classList.add('active');
+            } else {
+                btnConsentSubmit.setAttribute('disabled', 'true');
+                btnConsentSubmit.classList.remove('active');
+            }
+        }
+
+        function submitConsent() {
+            playClickSound();
+            isAnimating = true;
+            consentOverlay.classList.remove('show'); // ปิดป๊อปอัพสัญญาลง
+            btnGetKey.style.display = 'none'; // ซ่อนปุ่มคีย์
+            
+            // 💡 เพิ่มบรรทัดนี้: ล้างข้อความเก่าทิ้งทันที เพื่อความคลีน จะได้ไม่เห็นคำใบ้เก่าตอนกุญแจแตกตัวค่ะ
+            lockSubtitle.innerHTML = ''; 
+
+            setTimeout(() => {
+                const lockFrameRate = 350; // ⚡ ปรับความเร็วเฟรมให้เร็วขึ้นเพื่อความสมูทลื่นไหลตอนแม่กุญแจแตกตัว
+                const lockInterval = setInterval(() => {
+                    currentLockFrame++; 
+                    
+                    if (currentLockFrame < lockFrames.length) { 
+                        lockImg.src = lockFrames[currentLockFrame];
+                    }
+                    
+                    // เมื่อเล่นจนถึงเฟรมสุดท้ายของแม่กุญแจ
+                    if (currentLockFrame >= lockFrames.length - 1) {
+                        clearInterval(lockInterval);
+                        setTimeout(() => {
+                            lockStage.classList.add('fade-out-step'); // ค่อย ๆ เฟดตัวแม่กุญแจจางหายไป
+                            setTimeout(() => {
+                                window.location.href = 'letter.html'; // ลิ้งค์ย้ายเข้าหน้าจดหมายซึ้ง ๆ
+                            }, 500);
+                        }, 700);
+                    }
+                }, lockFrameRate);
+            }, 700); // ลดดีเลย์จังหวะเริ่มต้นลงนิดนึงเพื่อให้แอนิเมชันทำงานต่อเนื่องทันใจขึ้นค่ะ
+        }
+        function playClickSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.08);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function playErrorSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(140, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>
